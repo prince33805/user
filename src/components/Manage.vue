@@ -1,12 +1,12 @@
 <template>
   <div class="c">
     <br /><br />
-    <h1 class="ml-16">Manage Product</h1>
+    <h1 class="ml-16">Manage User</h1>
     <br />
-    <v-btn class="ml-16" color="success" @click="newItemMode()"
+    <!-- <v-btn class="ml-16" color="success" @click="newItemMode()"
       >+ Create New Product</v-btn
-    >
-    <br /><br />
+    > -->
+    <!-- <br /><br /> -->
     <v-row no-gutters>
       <v-col cols="6" v-for="(item, index) in apidata" :key="index">
         <v-card elevation="8" class="pb-4 my-8 mx-16">
@@ -200,7 +200,7 @@ export default {
       // ลบข้อมูล
       try {
         const { data } = await this.axios.delete(
-          "http://localhost:3000/product/" + this.id
+          "http://localhost:3000/user/" + this.id
         );
         alert(data.message);
         this.getData();
@@ -216,7 +216,7 @@ export default {
       // แก้ไขข้อมูล
       try {
         const { data } = await this.axios.put(
-          "http://localhost:3000/product/" + this.id,
+          "http://localhost:3000/user/" + this.id,
           this.postdata
         );
         alert(data.message);

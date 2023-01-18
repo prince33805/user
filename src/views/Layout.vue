@@ -1,9 +1,9 @@
 <template>
   <div>
     <v-app-bar app color="purple" dark class="c">
-      <div class="d-flex align-center pl-4">
+      <div class="d-flex align-center pl-12">
         <v-icon>mdi-store-outline</v-icon>
-        <h1>SHOPPERs</h1>
+        <h1>USERs</h1>
         <!-- <v-img
           alt="Vuetify Logo"
           class="shrink mr-2"
@@ -16,7 +16,7 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn href="/" text>
+      <!-- <v-btn href="/" text>
         <span class="mr-2">Home</span>
         <v-icon>mdi-home-outline</v-icon>
       </v-btn>
@@ -39,7 +39,14 @@
       <v-btn target="_blank" text @click="LoginMode()" v-else>
         <span class="mr-2">{{ username }}</span>
         <v-icon>mdi-account-circle-outline</v-icon>
+      </v-btn> -->
+      <v-btn target="_blank" text @click="newItemMode()">
+        <v-icon>mdi-account-circle-outline</v-icon>
+        <span class="mr-2">Register</span>
       </v-btn>
+      <!-- <v-btn class="ml-16" color="success" @click="newItemMode()"
+      >+ Create New Product</v-btn
+    > -->
     </v-app-bar>
 
     <v-navigation-drawer right v-model="drawer" absolute bottom temporary>
@@ -86,6 +93,61 @@
         <v-btn color="success" @click="checkout()">checkout</v-btn>
       </v-list>
     </v-navigation-drawer>
+
+    <v-dialog v-model="dialogedit" max-width="500px" class="">
+      <v-card>
+        <v-card-title>{{ savemode }}</v-card-title>
+        <v-card-text>
+          <v-row>
+            <v-col cols="6">
+              <v-text-field
+                name="email"
+                label="email"
+                id="email"
+                v-model="postdata.email"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                name="password"
+                label="password"
+                id="password"
+                v-model="postdata.password"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                name="fname"
+                label="fname"
+                id="fname"
+                v-model="postdata.fname"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                name="lname"
+                label="lname"
+                id="lname"
+                v-model="postdata.lname"
+              ></v-text-field>
+            </v-col>
+            <!-- <v-col cols="12">
+              <v-textarea
+                auto-grow
+                name="description"
+                label="description"
+                id="description"
+                v-model="postdata.description"
+              ></v-textarea>
+            </v-col> -->
+          </v-row>
+        </v-card-text>
+        <v-card-actions class="pb-8 justify-end pr-8">
+          <v-btn color="error" text @click="closeData()">cancel</v-btn>
+          <v-btn color="success" @click="selectSave()">save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="dialoglogin" max-width="500px">
       <v-card>
@@ -135,46 +197,61 @@ export default {
       auth: false,
       drawer: false,
       dialoglogin: false,
+      dialogedit: false,
       cart: [],
       number: 1,
       postdata: {
         // ตัวส่งข้อมูลหลัก
-        username: "",
+        email: "",
         password: "",
+        fname: "",
+        lname: "",
+      },
+      postdefault: {
+        // ตัวเคลียค่าว่าง
+        email: "",
+        password: "",
+        fname: "",
+        lname: "",
+        // username: '',
+        // password: '',
+        // name: '',
+        // address: '',
+        // moneypag: 1234
       },
     };
   },
+  computed: {
+    savemode() {
+      // เข็คโหมดการบันทึกเรียลไทม์
+      // eslint-disable-next-line eqeqeq
+      return this.id == "" ? "New Item" : "Edit Item";
+    },
+  },
   created() {
-    console.log("auth =", this.auth);
     this.getData();
   },
   methods: {
     getData() {
-      this.axios.get("http://localhost:3000/cart/").then((response) => {
+      this.axios.get("http://localhost:3000/user/").then((response) => {
         console.log(response.data);
         this.length = response.data.data.length;
         this.cart = response.data.data;
       });
     },
     async postData() {
-      // login
+      // เพิ่มข้อมูล
       try {
         const { data } = await this.axios.post(
-          "http://localhost:3000/index/login",
+          "http://localhost:3000/register/",
           this.postdata
         );
         alert(data.message);
-        this.username = data.data.username;
-        console.log(this.username);
-        this.auth = true;
-        console.log("auth =", this.auth);
+        this.getData();
         this.postdata = { ...this.postdefault };
-        this.dialoglogin = false;
+        this.dialogedit = false;
       } catch (err) {
         console.log(err);
-        alert(
-          "username or password are not correct , please check and loggin again"
-        );
       }
     },
     LoginMode() {
@@ -182,12 +259,25 @@ export default {
       this.id = "";
       this.dialoglogin = true;
     },
+    selectSave() {
+      // ตัดสินใจบันทึกโหมดไหน
+      // eslint-disable-next-line eqeqeq
+      if (this.savemode == "Edit Item") {
+        this.putData();
+      } else this.postData();
+    },
+    newItemMode() {
+      // กดปุ่มสร้างใหม่
+      this.id = "";
+      this.dialogedit = true;
+    },
     closeData() {
       // กดปุ่มปิด
       this.id = "";
       this.postdata = { ...this.postdefault };
       this.dialoglogin = false;
       this.dialogdelete = false;
+      this.dialogedit = false;
     },
     CartMode() {
       // กดปุ่มสร้างใหม่
